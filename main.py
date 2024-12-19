@@ -285,10 +285,12 @@ try:
             temp_, hum_ = weather.DHT11_READ()
             
             light_lux = micldr.read_lux()
+            mic_db = micldr.adc_to_db()
             
-            data = [temp_, hum_, light_lux, mic_]
+            data = [temp_, hum_, light_lux, mic_db]
             data_string = str(data)
             
+            #print(f"read_db: {mic_db}")
             send_message(data_string, MQTT_TOPIC, mqtt_client)
 
             

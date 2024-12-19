@@ -1,6 +1,7 @@
 from machine import ADC, Pin, Timer
 import time
 import buzzer as play
+import math
 mic = ADC(Pin(33))
 ldr = ADC(Pin(35))
 switch = Pin(27, Pin.OUT)
@@ -35,6 +36,7 @@ def microphone_on_off():
 
 
 
+
 # Reads the two different ADC pins and returns the values
 def read_adc():
 	mic_val = mic.read()
@@ -64,3 +66,11 @@ def read_lux():
 
     #print(f"Analog Value = {analog_value} Voltage = {voltage:.3f} Lux = {lux:.2f}")
     return round(lux, 2)
+
+
+
+# Function to convert ADC value to decibels (dB)
+def adc_to_db():
+    adc_val = mic.read()
+
+    return 20 * math.log10(adc_val/4095)

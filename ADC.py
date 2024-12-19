@@ -73,4 +73,7 @@ def read_lux():
 def adc_to_db():
     adc_val = mic.read()
 
+    if adc_val == 0.0:
+        return 0.0
+    
     return 20 * math.log10(adc_val/4095)

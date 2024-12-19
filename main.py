@@ -33,17 +33,25 @@ client_id = credentials['client_id']
 MQTT_TOPIC = 'mqtt_sensordata'
 
 
+# ----------------------------------------
+# MQTT methods
+
+# Based on https://randomnerdtutorials.com/micropython-mqtt-esp32-esp8266/
+def sub_cb(topic, msg):
+  print((topic, msg))
+
 
 # Taken from https://randomnerdtutorials.com/micropython-mqtt-esp32-esp8266/
 def connect_and_subscribe(topic_sub):
   global client_id, mqtt_server
   
   mqtt_client = MQTTClient(client_id, mqtt_server)
-  # mqtt_client.set_callback(sub_cb)
+  mqtt_client.set_callback(sub_cb)
   mqtt_client.connect()
   mqtt_client.subscribe(topic_sub)
   print('Connected to %s MQTT broker, subscribed to %s topic' % (mqtt_server, topic_sub))
   return mqtt_client
+
 
 
 # ----------------------------------------

@@ -1,6 +1,5 @@
 ############################
 #Imports
-import testboot
 import time 
 import ultrasonic_sensor as us
 import vibrationmotor as vib
@@ -135,13 +134,13 @@ def sleep_condition():
     if number_satisfied == 4 and on_off == 1:
         play.success_melody
         vib.vibrate()
-        sleep(0.5)
+        time.sleep(0.5)
         vib.vibrate()
         print("Perfect condition!")
     elif number_satisfied == 3 and on_off == 0:
         play.success_melody
         vib.vibrate()
-        sleep(0.5)
+        time.sleep(0.5)
         vib.vibrate()
         print("Perfect condition, sound not measured!")
     else:

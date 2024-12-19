@@ -7,6 +7,7 @@ import DHT11 as weather
 import WS2812B as LED
 import ADC as micldr
 import buzzer as play
+from time import ticks_ms
 
 # MQTT imports
 from umqttsimple import MQTTClient
@@ -25,13 +26,14 @@ light_passed = 0
 mic_passed = 0
 
 
-
-
+####################################################################################################
 # MQTT
+
 mqtt_server = credentials['mqtt_server']
 client_id = credentials['client_id']
 MQTT_TOPIC = 'mqtt_sensordata'
 
+mqtt_start_ms = ticks_ms()
 
 # ----------------------------------------
 # MQTT methods
@@ -42,15 +44,26 @@ def sub_cb(topic, msg):
 
 
 # Taken from https://randomnerdtutorials.com/micropython-mqtt-esp32-esp8266/
-def connect_and_subscribe(topic_sub):
+def mqtt_connect(topic_sub):
   global client_id, mqtt_server
   
-  mqtt_client = MQTTClient(client_id, mqtt_server)
-  mqtt_client.set_callback(sub_cb)
-  mqtt_client.connect()
-  mqtt_client.subscribe(topic_sub)
+  client = MQTTClient(client_id, mqtt_server)
+  client.set_callback(sub_cb)
+  client.connect()
+  client.subscribe(topic_sub)
   print('Connected to %s MQTT broker, subscribed to %s topic' % (mqtt_server, topic_sub))
-  return mqtt_client
+  return client
+
+
+# Responsible for trying to send a message to MQTT-server when called. Takes a message and mqtt topic as arguments.
+def send_message(msg, topic, client: MQTTClient):
+    try:
+        # client.connect()
+        client.publish(topic, msg)
+        print(f"[MQTT] Topic: {topic} | Message: {msg}")
+    except OSError as error:
+        print(error)
+        print(f"[MQTT] Message not sent. Topic: {topic} | Message: {msg}")
 
 
 
@@ -58,10 +71,12 @@ def connect_and_subscribe(topic_sub):
 # Connect to MQTT
 try:
     print("[MQTT] Connecting to broker...")
-    mqtt_client = connect_and_subscribe(MQTT_TOPIC)
+    mqtt_client = mqtt_connect(MQTT_TOPIC)
 except Exception as e:
     print(f"[MQTT] Connection failed: {e}")
 
+
+####################################################################################################
 
 #############
 #Temperature and Humidity check
@@ -193,6 +208,12 @@ def sleep_condition():
 mic_val, ldr_val = micldr.read_adc()
 
 
+
+
+
+
+
+
 #########################
 #Main loop, uses the different features on the board for sleep condition monitoring
 try:
@@ -249,6 +270,23 @@ try:
         else:
             pass
         #To allow escape from Loop incase of bad code
+        
+        
+        #------------------------
+        # Send sensordata over MQTT
+        
+        MQTT_DELAY_MS = 10000
+        
+        if ticks_ms() - mqtt_start_ms > MQTT_DELAY_MS: # Non breaking delay for the battery status.
+            mqtt_start_ms = ticks_ms()
+            
+            data = [temp_passed, hum_passed, light_passed, mic_passed]
+            data_string = str(data)
+            
+            send_message(data_string, MQTT_TOPIC, mqtt_client)
+
+            
+            
 except KeyboardInterrupt:
     play.failure_melody()
     LED.fade_color(LED.last_color , (0, 0 ,0) )

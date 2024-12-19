@@ -11,8 +11,8 @@ np = neopixel.NeoPixel(Pin(p), n)
 
 #Function to seamlessly fade from starting color to end color, with definable colors, steps and delay between steps
 def fade_color(start_color, end_color, steps=15, delay=0.10,):
-        #This is global, to let function acquire latest used end color 
-        global last_color
+	#This is global, to let function acquire latest used end color 
+	global last_color
 	for step in range(steps + 1):
 		r = start_color[0] + (end_color[0] - start_color[0]) * step // steps
 		g = start_color[1] + (end_color[1] - start_color[1]) * step // steps

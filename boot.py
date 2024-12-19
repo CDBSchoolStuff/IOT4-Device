@@ -7,7 +7,6 @@ import WS2812B as LED
 import buzzer as play
 import network
 import esp
-import logging
 
 
 #####
@@ -23,7 +22,7 @@ mqtt_server = credentials['mqtt_server']
 client_id = credentials['client_id']
 last_message = 0
 message_interval = 5
-
+MQTT_PORT = 1883
 
 def connect_and_subscribe(topic_sub):
   global client_id, mqtt_server
@@ -52,7 +51,7 @@ password = credentials["password"]
 
 station = network.WLAN(network.STA_IF)
 
-#Attempt to connect to Wi-Fi.
+# Attempt to connect to Wi-Fi.
 # Success or failure is indicated with LED color, audio.
 try:
     print("Starting connection attempt!")
@@ -77,17 +76,20 @@ except: # Incase network doesn't connect, the program allows continuing.
     sleep(2)
     
 
-try:
-    print("Connecting to MQTT broker!")
-    LED.fade_color( LED.last_color , (160, 50, 0 ), 15 , 0.10)
-    sleep(1)
-    connect_and_subscribe(MQTT_TOPIC_SENSORDATA = 'mqtt_sensordata')
-    print("Connection successful")
-    LED.fade_color(LED.last_color, (0, 160, 0 ), 15 , 0.10)
-    play.success_melody()
+# Attempt to connect to MQTT broker.
+# Success or failure is indicated with LED color, audio.
+# try:
+#     print("Connecting to MQTT broker!")
+#     LED.fade_color( LED.last_color , (160, 50, 0 ), 15 , 0.10)
+#     sleep(1)
+#     mqtt_client = connect_and_subscribe(MQTT_TOPIC_SENSORDATA)
     
-except: # Incase network doesn't connect, the program allows continuing.
-    print("Failed to connect to MQTT broker.")
-    play.failure_melody()
-    LED.fade_color( LED.last_color , (160, 0, 0 ), 15 , 0.10)
-    sleep(2)
+#     print("Successfully connected to MQTT broker.")
+#     LED.fade_color(LED.last_color, (0, 160, 0 ), 15 , 0.10)
+#     play.success_melody()
+    
+# except: # Incase network doesn't connect, the program allows continuing.
+#     print("Failed to connect to MQTT broker.")
+#     play.failure_melody()
+#     LED.fade_color( LED.last_color , (160, 0, 0 ), 15 , 0.10)
+#     sleep(2)

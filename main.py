@@ -7,7 +7,10 @@ import DHT11 as weather
 import WS2812B as LED
 import ADC as micldr
 import buzzer as play
-import credentials
+
+# MQTT imports
+from umqttsimple import MQTTClient
+from credentials import credentials
 
 ###########################
 #Global variables
@@ -20,6 +23,36 @@ temp_passed = 0
 hum_passed = 0
 light_passed = 0
 mic_passed = 0
+
+
+
+
+# MQTT
+mqtt_server = credentials['mqtt_server']
+client_id = credentials['client_id']
+MQTT_TOPIC = 'mqtt_sensordata'
+
+
+
+# Taken from https://randomnerdtutorials.com/micropython-mqtt-esp32-esp8266/
+def connect_and_subscribe(topic_sub):
+  global client_id, mqtt_server
+  
+  mqtt_client = MQTTClient(client_id, mqtt_server)
+  # mqtt_client.set_callback(sub_cb)
+  mqtt_client.connect()
+  mqtt_client.subscribe(topic_sub)
+  print('Connected to %s MQTT broker, subscribed to %s topic' % (mqtt_server, topic_sub))
+  return mqtt_client
+
+
+# ----------------------------------------
+# Connect to MQTT
+try:
+    print("[MQTT] Connecting to broker...")
+    mqtt_client = connect_and_subscribe(MQTT_TOPIC)
+except Exception as e:
+    print(f"[MQTT] Connection failed: {e}")
 
 
 #############

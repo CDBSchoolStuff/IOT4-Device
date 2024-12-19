@@ -56,4 +56,11 @@ def average_readings():
     return average
 
 
+# Function to read and process light sensor data
+def read_lux():
+    analog_value = ldr.read()  # Read the raw ADC value
+    voltage = analog_value * (3.3 / 4095.0)  # Convert ADC value to voltage (assuming 3.3V max)
+    lux = analog_value * (198 / 2200.0)  # Calculate lux using the calibrated factor
 
+    #print(f"Analog Value = {analog_value} Voltage = {voltage:.3f} Lux = {lux:.2f}")
+    return round(lux, 2)

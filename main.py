@@ -202,6 +202,7 @@ def sleep_condition():
     else:
         play.failure_melody()
         print("Conditions for a good sleep not met.")
+
         
 ##########################
 #Unpacking / creating the variables for startup use
@@ -280,7 +281,12 @@ try:
         if ticks_ms() - mqtt_start_ms > MQTT_DELAY_MS: # Non breaking delay for the battery status.
             mqtt_start_ms = ticks_ms()
             
-            data = [temp_passed, hum_passed, light_passed, mic_passed]
+            mic_, _ = micldr.read_adc()
+            temp_, hum_ = weather.DHT11_READ()
+            
+            light_lux = micldr.read_lux()
+            
+            data = [temp_, hum_, light_lux, mic_]
             data_string = str(data)
             
             send_message(data_string, MQTT_TOPIC, mqtt_client)

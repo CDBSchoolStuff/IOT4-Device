@@ -69,7 +69,7 @@ def send_message(msg, topic, client: MQTTClient):
 
 # ----------------------------------------
 # Connect to MQTT
-"""
+
 try:
     print("[MQTT] Connecting to broker...")
     mqtt_client = mqtt_connect(MQTT_TOPIC)
@@ -79,7 +79,7 @@ except Exception as e:
     print(f"[MQTT] Connection failed: {e}")
     play.failure_melody()
     vib.vibrate(0.6)
-"""
+
 
 ####################################################################################################
 
@@ -231,6 +231,7 @@ try:
     micldr.microphone_on_off()
     while True:
         # Unpacking / creating temp and hum variables for use in functions
+        
         temp, hum = weather.DHT11_READ()
         # If too bright, use bright LED
         if micldr.read_lux() > 200: 
@@ -296,11 +297,11 @@ try:
             light_lux = micldr.read_lux()
             mic_db = micldr.adc_to_db()
             
-            data = [temp_, hum_, light_lux, mic_db]
+            data = [temp_, hum_, mic_db, light_lux]
             data_string = str(data)
             
             #print(f"read_db: {mic_db}")
- #           send_message(data_string, MQTT_TOPIC, mqtt_client)
+            send_message(data_string, MQTT_TOPIC, mqtt_client)
 
             
             

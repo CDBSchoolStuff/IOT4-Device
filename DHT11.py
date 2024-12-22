@@ -16,7 +16,8 @@ def DHT11_READ():
         sensor.measure()
         temp = sensor.temperature()
         hum = sensor.humidity()
-        return temp,hum
+        return temp, hum
 #Incase of no read value due to error, ignore this attempt and continue
     except OSError as e:
         print("Failed to read sensor.")
+        return 0, 0

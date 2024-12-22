@@ -33,11 +33,10 @@ def fade_color_flash(base_color = (140,40,0)):
     fade_color(last_color , ( base_color))
 
         
-""" Not used, but allows static color without color fading / blending
+# Not used, but allows static color without color fading / blending
 # Function to set all LEDs to a specific color
 def set_color(r, g, b):
     for i in range(n):
         np[i] = (r, g, b)
     np.write()
     
-"""

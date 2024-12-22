@@ -1,4 +1,7 @@
+
+
 print("Booting.")
+
 from time import ticks_ms, sleep
 sleep(2) # Pausing code before running anything to prevent bad code from causing boot looping.
 
@@ -93,3 +96,4 @@ except: # Incase network doesn't connect, the program allows continuing.
 #     play.failure_melody()
 #     LED.fade_color( LED.last_color , (160, 0, 0 ), 15 , 0.10)
 #     sleep(2)
+

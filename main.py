@@ -1,3 +1,4 @@
+
 ############################
 #Imports
 import time 
@@ -15,8 +16,7 @@ from credentials import credentials
 
 ###########################
 #Global variables
-global ldr_val
-global avg
+
 
 ###########################
 #Variables for later use
@@ -69,12 +69,17 @@ def send_message(msg, topic, client: MQTTClient):
 
 # ----------------------------------------
 # Connect to MQTT
+"""
 try:
     print("[MQTT] Connecting to broker...")
     mqtt_client = mqtt_connect(MQTT_TOPIC)
+    vib.vibrate()
+    play.success_melody()
 except Exception as e:
     print(f"[MQTT] Connection failed: {e}")
-
+    play.failure_melody()
+    vib.vibrate(0.6)
+"""
 
 ####################################################################################################
 
@@ -85,6 +90,7 @@ def temp_hum_check(timer = 0.5):
     global hum_passed
     if 19 < temp < 22:
         LED.fade_color(LED.last_color , ( 0, 80 , 0) )
+        vib.vibrate()
         print("Just right.")
         temp_passed = 1
         play.success_melody()
@@ -103,7 +109,8 @@ def temp_hum_check(timer = 0.5):
     
     if 30 < hum < 50:
         LED.fade_color(LED.last_color , ( 0, 80 , 0) )
-        print("Just right.")
+        print("Humidity OK.")
+        vib.vibrate()
         hum_passed = 1
         play.success_melody()
     elif hum < 30:
@@ -124,7 +131,8 @@ def temp_hum_check_dark(timer = 0.5):
     global hum_passed
     if 19 < temp < 22:
         LED.fade_color(LED.last_color , ( 0, 20 , 0) )
-        print("Just right.")
+        print("Temperature OK.")
+        vib.vibrate()
         temp_passed = 1
         play.success_melody()
     elif temp < 19:
@@ -141,7 +149,8 @@ def temp_hum_check_dark(timer = 0.5):
     
     if 30 < hum < 50:
         LED.fade_color(LED.last_color , ( 0, 20 , 0) )
-        print("Humidity is good!")
+        print("Humidity is OK!")
+        vib.vibrate()
         hum_passed = 1
         play.success_melody()
     elif hum < 30:
@@ -161,39 +170,41 @@ def temp_hum_check_dark(timer = 0.5):
 def light_mic_check(timer = 0.5):
     global light_passed
     global mic_passed
-    mic_val, ldr_val = micldr.read_adc()
-    if ldr_val < 200:
+    lux = micldr.read_lux()
+    mic_val = micldr.adc_to_db()
+    if lux < 20:
         print("Optimal light level!")
+        vib.vibrate()
         LED.fade_color_flash((0,0,20))
         LED.fade_color_flash((0,0,20))
         light_passed = 1
-        return light_passed
     else:
         print("Lower the light level for optimal sleep!")
         LED.fade_color(LED.last_color , ( 80 , 80 , 80) )
         light_passed = 0
-        pass
-    if avg <= 200 and micldr.on_off == 0:
-        print(f"Current average mic level: {avg}")
+        
+    if mic_val <= 30 and micldr.on_off == 1:
+        print(f"Current average mic level: {mic_val}")
+        vib.vibrate()
         mic_passed = 1
     else:
-        print(f"Current average mic level: {avg}")
+        print(f"Current average mic level: {mic_val}")
         mic_passed = 0
     time.sleep(timer)
     
 ##################################
 #To check for perfect sleep conditions
 def sleep_condition():
-    print(light_passed,light_passed,temp_passed,hum_passed)
     number_satisfied = 0 + light_passed + temp_passed + hum_passed + mic_passed
-    print(f"Total satisfaction:{number_satisfied} out of 4")
     if number_satisfied == 4 and on_off == 1:
+        print(f"Total satisfaction:{number_satisfied} out of 4")
         play.success_melody
         vib.vibrate()
         time.sleep(0.5)
         vib.vibrate()
         print("Perfect condition!")
     elif number_satisfied == 3 and on_off == 0:
+        print(f"Total satisfaction:{number_satisfied} out of 3")
         play.success_melody
         vib.vibrate()
         time.sleep(0.5)
@@ -206,13 +217,12 @@ def sleep_condition():
         
 ##########################
 #Unpacking / creating the variables for startup use
-mic_val, ldr_val = micldr.read_adc()
 
 
 
 
 
-
+vib.vibrate()
 
 
 #########################
@@ -222,10 +232,8 @@ try:
     while True:
         # Unpacking / creating temp and hum variables for use in functions
         temp, hum = weather.DHT11_READ()
-        # Takes the avg of 10 readings from the adctest.py file for use in sound monitoring
-        avg = micldr.average_readings()
         # If too bright, use bright LED
-        if ldr_val > 200: 
+        if micldr.read_lux() > 200: 
             LED.fade_color(LED.last_color , (120, 100 ,0) )
             bright = True
             # If too dark, use weaker values to avoid waking user
@@ -234,11 +242,12 @@ try:
             bright = False
 # For interacting with unit, 15 cm or under solution to trigger in darkmode
 #Runs checks on different features and displays status using colored LED.
-        if 35 < us.read_distance() < 50:
+        if 30 < us.read_distance() < 50:
             global on_off
+            vib.vibrate()
             on_off = micldr.microphone_on_off()
             print(on_off)
-            time.sleep(1)
+            time.sleep(0.5)
             
 
 
@@ -278,7 +287,7 @@ try:
         
         MQTT_DELAY_MS = 10000
         
-        if ticks_ms() - mqtt_start_ms > MQTT_DELAY_MS: # Non breaking delay for the battery status.
+        if ticks_ms() - mqtt_start_ms > MQTT_DELAY_MS: # Non breaking delay for sending MQTT data.
             mqtt_start_ms = ticks_ms()
             
             mic_, _ = micldr.read_adc()
@@ -291,7 +300,7 @@ try:
             data_string = str(data)
             
             #print(f"read_db: {mic_db}")
-            send_message(data_string, MQTT_TOPIC, mqtt_client)
+ #           send_message(data_string, MQTT_TOPIC, mqtt_client)
 
             
             
@@ -307,7 +316,6 @@ except KeyboardInterrupt:
         
         
     
-
 
 
 

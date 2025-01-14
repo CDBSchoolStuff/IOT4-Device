@@ -91,17 +91,17 @@ def temp_hum_check(timer = 0.5):
     if 19 < temp < 22:
         LED.fade_color(LED.last_color , ( 0, 80 , 0) )
         vib.vibrate()
-        print("Just right.")
+        print(f"Just right. {temp}")
         temp_passed = 1
         play.success_melody()
     elif temp < 19:
         LED.fade_color(LED.last_color , ( 0, 0 , 80) )
         print(temp)
-        print("Too cold!")
+        print(f"Too cold! {temp}")
         temp_passed = 0
     else:
         LED.fade_color(LED.last_color , ( 80, 0 , 0) )
-        print("Too warm!")
+        print(f"Too warm! {temp}")
         temp_passed = 0
     LED.fade_color_flash()
     time.sleep(timer)
@@ -109,19 +109,19 @@ def temp_hum_check(timer = 0.5):
     
     if 30 < hum < 50:
         LED.fade_color(LED.last_color , ( 0, 80 , 0) )
-        print("Humidity OK.")
+        print(f"Humidity OK. {hum}")
         vib.vibrate()
         hum_passed = 1
         play.success_melody()
     elif hum < 30:
         LED.fade_color(LED.last_color , ( 80 , 0 ,  0) )
         print(hum)
-        print("Too dry!")
+        print(f"Too dry! {hum}")
         hum_passed = 0
     else:
         LED.fade_color(LED.last_color , ( 0 , 0 , 80) )
         print(hum)
-        print("Too humid!")
+        print(f"Too humid! {hum}")
         hum_passed = 0
     time.sleep(timer)
 ###############################
@@ -131,36 +131,36 @@ def temp_hum_check_dark(timer = 0.5):
     global hum_passed
     if 19 < temp < 22:
         LED.fade_color(LED.last_color , ( 0, 20 , 0) )
-        print("Temperature OK.")
+        print(f"Temperature OK. {temp}")
         vib.vibrate()
         temp_passed = 1
         play.success_melody()
     elif temp < 19:
         LED.fade_color(LED.last_color , ( 0, 0 , 20) )
         print(temp)
-        print("Too cold!")
+        print(f"Too cold! {temp}")
         temp_passed = 0
     else:
         LED.fade_color(LED.last_color , ( 20, 0 , 0) )
-        print("Too warm!")
+        print(f"Too warm! {temp}")
         temp_passed = 0
     LED.fade_color_flash((20,4,0))
     time.sleep(timer)
     
     if 30 < hum < 50:
         LED.fade_color(LED.last_color , ( 0, 20 , 0) )
-        print("Humidity is OK!")
+        print(f"Humidity is OK! {hum}")
         vib.vibrate()
         hum_passed = 1
         play.success_melody()
     elif hum < 30:
         LED.fade_color(LED.last_color , ( 20 , 0 ,  0) )
-        print("Too dry!")
+        print(f"Too dry! {hum}")
         hum_passed = 0
     else:
         LED.fade_color(LED.last_color , ( 0 , 0 , 20) )
         print(hum)
-        print("Too humid!")
+        print(f"Too humid! {hum}")
         hum_passed = 0
     time.sleep(timer)
     
@@ -173,13 +173,13 @@ def light_mic_check(timer = 0.5):
     lux = micldr.read_lux()
     mic_val = micldr.adc_to_db()
     if lux < 20:
-        print("Optimal light level!")
+        print(f"Optimal light level! {lux}")
         vib.vibrate()
         LED.fade_color_flash((0,0,20))
         LED.fade_color_flash((0,0,20))
         light_passed = 1
     else:
-        print("Lower the light level for optimal sleep!")
+        print(f"Lower the light level for optimal sleep! {lux}")
         LED.fade_color(LED.last_color , ( 80 , 80 , 80) )
         light_passed = 0
         
@@ -198,6 +198,8 @@ def sleep_condition():
     number_satisfied = 0 + light_passed + temp_passed + hum_passed + mic_passed
     if number_satisfied == 4 and on_off == 1:
         print(f"Total satisfaction:{number_satisfied} out of 4")
+        LED.fade_color_flash((0,0,100))
+        LED.fade_color_flash((0,0,100))
         play.success_melody
         vib.vibrate()
         time.sleep(0.5)
@@ -211,8 +213,10 @@ def sleep_condition():
         vib.vibrate()
         print("Perfect condition, sound not measured!")
     else:
-        play.failure_melody()
         print("Conditions for a good sleep not met.")
+        play.failure_melody()
+        LED.fade_color_flash((100,0,0))
+        LED.fade_color_flash((100,0,0))
 
         
 ##########################
@@ -286,22 +290,25 @@ try:
         #------------------------
         # Send sensordata over MQTT
         
-        MQTT_DELAY_MS = 10000
+            MQTT_DELAY_MS = 10000
+        try:
         
-        if ticks_ms() - mqtt_start_ms > MQTT_DELAY_MS: # Non breaking delay for sending MQTT data.
-            mqtt_start_ms = ticks_ms()
+            if ticks_ms() - mqtt_start_ms > MQTT_DELAY_MS: # Non breaking delay for sending MQTT data.
+                mqtt_start_ms = ticks_ms()
             
-            mic_, _ = micldr.read_adc()
-            temp_, hum_ = weather.DHT11_READ()
+                mic_, _ = micldr.read_adc()
+                temp_, hum_ = weather.DHT11_READ()
             
-            light_lux = micldr.read_lux()
-            mic_db = micldr.adc_to_db()
+                light_lux = micldr.read_lux()
+                mic_db = micldr.adc_to_db()
             
-            data = [temp_, hum_, mic_db, light_lux]
-            data_string = str(data)
+                data = [temp_, hum_, mic_db, light_lux]
+                data_string = str(data)
             
             #print(f"read_db: {mic_db}")
-            send_message(data_string, MQTT_TOPIC, mqtt_client)
+                send_message(data_string, MQTT_TOPIC, mqtt_client)
+        except:
+            pass
 
             
             
